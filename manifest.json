@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Countdown Timer",
+  "version": "1.0",
+  "description": "A simple countdown timer extension for Chrome.",
+  "action": {
+    "default_popup": "popup/popup.html"
+  },
+  "permissions": []
+}

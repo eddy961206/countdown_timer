@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Countdown Timer</title>
+  <link rel="stylesheet" href="/assets/styles/style.css">
+  <script src="/thirdParty/jquery-3.6.0.min.js"></script>
+  <script src="/assets/scripts/popup.js"></script>
+</head>
+
+<body>
+  <div class="timer-container">
+    <h2>Countdown Timer</h2>
+    <div class="input-group">
+      <label for="hours">Hours:</label>
+      <input type="number" id="hours" min="0" value="0">
+    </div>
+    <div class="input-group">
+      <label for="minutes">Minutes:</label>
+      <input type="number" id="minutes" min="0" value="0">
+    </div>
+    <div class="input-group">
+      <label for="seconds">Seconds:</label>
+      <input type="number" id="seconds" min="0" value="0">
+    </div>
+    <div class="buttons">
+      <button id="start">Start</button>
+      <button id="pause">Pause</button>
+      <button id="reset">Reset</button>
+    </div>
+    <div class="display">
+      <span id="time-display">00:00:00</span>
+    </div>
+  </div>
+</body>
+
+</html>
