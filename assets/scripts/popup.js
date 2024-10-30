@@ -12,7 +12,7 @@ $(document).ready(function () {
     // 현재 시각 표시 업데이트
     function updateCurrentTime() {
         const now = new Date();
-        $('#current-time').text(formatTime(now));
+        $('#current-time').text(`now - ${formatTime(now)}`);
     }
 
     // 매 초마다 현재 시각 업데이트
@@ -28,19 +28,38 @@ $(document).ready(function () {
         );
     }
 
+    // 알람 설정 함수 수정
+    function setAlarm(time) {
+        const [hours, minutes] = time.split(':');
+        const alarmTime = new Date();
+        alarmTime.setHours(hours);
+        alarmTime.setMinutes(minutes);
+        alarmTime.setSeconds(0);
+
+        // 만약 설정한 시간이 현재 시간보다 이전이면 다음 날로 설정
+        if (alarmTime < new Date()) {
+            alarmTime.setDate(alarmTime.getDate() + 1);
+        }
+
+        // background script에 메시지 전송
+        chrome.runtime.sendMessage({
+            type: 'SET_ALARM',
+            alarmTime: alarmTime.getTime()
+        });
+
+        // UI 업데이트
+        $('.alarm-indicator').show();
+    }
+
+    // 타이머 시작 함수 수정
     function startTimer() {
-        if (timer) return;
-        timer = setInterval(function () {
-            if (totalSeconds > 0) {
-                totalSeconds--;
-                updateDisplay(totalSeconds);
-            } else {
-                clearInterval(timer);
-                timer = null;
-                playAlarmSound();
-                showNotification('Timer Complete', 'Your countdown timer has finished!');
-            }
-        }, 1000);
+        if (!isPaused && totalSeconds > 0) {
+            // background script에 메시지 전송
+            chrome.runtime.sendMessage({
+                type: 'SET_TIMER',
+                seconds: totalSeconds
+            });
+        }
     }
 
     function playAlarmSound() {
@@ -122,11 +141,10 @@ $(document).ready(function () {
     $('#alarm-time').on('change', function () {
         const selectedTime = $(this).val();
         if (selectedTime) {
-            alarmTime = selectedTime;
-            $('.alarm-indicator').show();
-            showNotification('Alarm Set', `Alarm has been set for ${selectedTime}`);
+            setAlarm(selectedTime);
         } else {
-            alarmTime = null;
+            // 알람 취소 처리
+            chrome.runtime.sendMessage({ type: 'CANCEL_ALARM' });
             $('.alarm-indicator').hide();
         }
     });
