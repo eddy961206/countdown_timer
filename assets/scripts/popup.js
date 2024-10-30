@@ -44,36 +44,36 @@ $(document).ready(function () {
     }
 
     function playAlarmSound() {
-        const audio = new Audio(chrome.runtime.getURL('assets/sounds/alarm.mp3'));
+        const audio = new Audio(chrome.runtime.getURL('/assets/sounds/alarm.mp3'));
         audio.play();
     }
 
     function showNotification(title, message) {
         chrome.notifications.create({
             type: 'basic',
-            iconUrl: 'assets/icons/icon48.png',
+            iconUrl: '/assets/images/icon2.png',
             title: title,
             message: message
         });
     }
 
     function checkAlarm() {
-        if (!alarmTime) return;
+        if (!alarmTime) return; // 알람 시간이 설정되지 않은 경우 종료
 
         const now = new Date();
-        const currentTime = formatTime(now);
+        const currentTime = formatTime(now); // 현재 시간을 포맷팅
 
-        if (currentTime === alarmTime) {
-            playAlarmSound();
-            showNotification('Alarm', 'Your scheduled alarm time has been reached!');
-            alarmTime = null;
-            $('#alarm-time').val('');
-            $('.alarm-indicator').hide();
+        if (currentTime === alarmTime) { // 현재 시간이 알람 시간과 일치하는지 확인
+            playAlarmSound(); // 알람 소리 재생
+            showNotification('Alarm', 'Your scheduled alarm time has been reached!'); // 알람 알림 표시
+            alarmTime = null; // 알람 시간 초기화
+            $('#alarm-time').val(''); // 입력 필드 초기화
+            $('.alarm-indicator').hide(); // 알람 인디케이터 숨기기
         }
     }
 
     // 매 분마다 알람 체크
-    setInterval(checkAlarm, 1000);
+    setInterval(checkAlarm, 1000); // 1초마다 checkAlarm 함수 호출
 
     // 이벤트 리스너들
     $('#start').click(function () {
