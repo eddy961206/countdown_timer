@@ -65,17 +65,23 @@ $(document).ready(function () {
     });
 
     // 숫자 입력 필드 제한
-    $('.number-input').on('input', function () {
-        let value = $(this).val();
-        if (value.length > 2) {
-            $(this).val(value.slice(0, 2));
+    $('.number-input').on('wheel', function (e) {
+        e.preventDefault(); // 기본 스크롤 동작 방지
+        let currentValue = parseInt($(this).val()) || 0;
+        const id = $(this).attr('id');
+        const min = parseInt($(this).attr('min')) || 0;
+        const max = parseInt($(this).attr('max')) || 99;
+
+        if (e.originalEvent.deltaY < 0) {
+            // 휠을 위로 스크롤 시 값 증가
+            currentValue = Math.min(currentValue + 1, max);
+        } else {
+            // 휠을 아래로 스크롤 시 값 감소
+            currentValue = Math.max(currentValue - 1, min);
         }
-        value = parseInt(value);
-        if ($(this).attr('id') === 'hours' && value > 23) {
-            $(this).val('23');
-        } else if (value > 59) {
-            $(this).val('59');
-        }
+
+        $(this).val(String(currentValue).padStart(2, '0'));
+        $(this).trigger('input'); // 입력 이벤트 트리거
     });
 });
 
@@ -123,6 +129,9 @@ function saveState() {
         alarmTime: alarmTime,
         targetTime: targetTime
     });
+
+
+    
 }
 
 // 상태 로드
@@ -146,9 +155,6 @@ function loadState() {
             const formattedAlarmTime = formatTime(alarmDate);
             $('#alarm-time').val(formattedAlarmTime);
             $('.alarm-indicator').show();
-            $('#current-alarm-time').text(`Set Alarm Time: ${formattedAlarmTime}`);
-        } else {
-            $('#current-alarm-time').text('');
         }
     });
 }
@@ -231,8 +237,6 @@ function setAlarm(time) {
     alarmTime = alarmDate.getTime();
     $('.alarm-indicator').show();
     $('#alarm-time').val(time);
-    // 현재 알람 시각 표시
-    $('#current-alarm-time').text(`Set Alarm Time: ${time}`);
 
     // 아이콘 배지 텍스트 ON 표시
     chrome.action.setBadgeText({ text: 'ON' });
@@ -247,7 +251,6 @@ function cancelAlarm() {
     alarmTime = null;
     $('#alarm-time').val('');
     $('.alarm-indicator').hide();
-    $('#current-alarm-time').text('');
 
     // 아이콘 배지 텍스트 초기화
     chrome.action.setBadgeText({ text: '' });
