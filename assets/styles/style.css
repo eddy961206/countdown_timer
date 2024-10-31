@@ -161,19 +161,37 @@ h2 {
 
 .alarm-indicator {
     display: none;
+    margin-top: 12px;
+    padding: 8px 12px;
+    background: rgba(34, 139, 230, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(34, 139, 230, 0.2);
+}
+
+.indicator-wrapper {
+    display: flex;
     align-items: center;
-    gap: 8px;
-    margin-top: 10px;
-    color: #228be6;
-    font-size: 14px;
+    gap: 10px;
 }
 
 .indicator-dot {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     background: #228be6;
     border-radius: 50%;
     animation: pulse 2s infinite;
+}
+
+.indicator-text {
+    color: #228be6;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.alarm-time-display {
+    margin-left: auto;
+    color: #495057;
+    font-size: 13px;
 }
 
 @keyframes pulse {
@@ -184,7 +202,7 @@ h2 {
     
     70% {
         transform: scale(1);
-        box-shadow: 0 0 0 10px rgba(34, 139, 230, 0);
+        box-shadow: 0 0 0 6px rgba(34, 139, 230, 0);
     }
     
     100% {

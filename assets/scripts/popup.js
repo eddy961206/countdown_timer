@@ -129,9 +129,6 @@ function saveState() {
         alarmTime: alarmTime,
         targetTime: targetTime
     });
-
-
-    
 }
 
 // 상태 로드
@@ -154,6 +151,7 @@ function loadState() {
             const alarmDate = new Date(alarmTime);
             const formattedAlarmTime = formatTime(alarmDate);
             $('#alarm-time').val(formattedAlarmTime);
+            $('.alarm-time-display').text(formattedAlarmTime);
             $('.alarm-indicator').show();
         }
     });
@@ -237,6 +235,7 @@ function setAlarm(time) {
     alarmTime = alarmDate.getTime();
     $('.alarm-indicator').show();
     $('#alarm-time').val(time);
+    $('.alarm-time-display').text(`${time}`);
 
     // 아이콘 배지 텍스트 ON 표시
     chrome.action.setBadgeText({ text: 'ON' });
