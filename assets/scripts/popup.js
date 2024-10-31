@@ -1,125 +1,19 @@
 
+let timer;
+let totalSeconds = 0;
+let isPaused = false;
+let alarmTime = null;
+let startTime = null; // 타이머 시작 시간
 
 $(document).ready(function () {
     loadState();
-
-    let timer;
-    let totalSeconds = 0;
-    let isPaused = false;
-    let alarmTime = null;
-    let startTime = null; // 타이머 시작 시간
 
     // 매 초마다 현재 시각 업데이트
     setInterval(updateCurrentTime, 1000);
     updateCurrentTime();
 
-    // 타이머 시작 함수 수정
-    function startTimer() {
-        if (!isPaused && totalSeconds > 0) {
-            // background script에 메시지 전송
-            chrome.runtime.sendMessage({
-                type: 'SET_TIMER',
-                seconds: totalSeconds
-            });
-
-            // 타이머 카운트다운 시작
-            timer = setInterval(function () {
-                if (!isPaused) {
-                    if (totalSeconds > 0) {
-                        totalSeconds--;
-                        updateDisplay(totalSeconds);
-                        saveState();
-                    } else {
-                        clearInterval(timer);
-                        timer = null;
-                        // 타이머 종료 시 알림 및 상태 초기화
-                        showNotification('Timer', 'The timer has ended!');
-                        chrome.action.setBadgeText({ text: '' });
-                    }
-                }
-            }, 1000);
-
-            // 아이콘 배지 텍스트 ON 표시
-            chrome.action.setBadgeText({ text: 'ON' });
-        }
-    }
-
-    function playAlarmSound() {
-        const audio = new Audio(chrome.runtime.getURL('/assets/sounds/alarm.mp3'));
-        audio.play();
-    }
-
-    function showNotification(title, message) {
-        chrome.notifications.create({
-            type: 'basic',
-            iconUrl: '/assets/images/icon2.png',
-            title: title,
-            message: message
-        });
-    }
-
-    function checkAlarm() {
-        if (!alarmTime) return; // 알람 시간이 설정되지 않은 경우 종료
-
-        const now = new Date();
-        const currentTime = formatTime(now); // 현재 시간을 포맷팅
-        const alarmDate = new Date(alarmTime);
-        const formattedAlarmTime = formatTime(alarmDate);
-
-        if (currentTime === formattedAlarmTime) { // 현재 시간이 알람 시간과 일치하는지 확인
-            playAlarmSound(); // 알람 소리 재생
-            showNotification('Alarm', 'Your scheduled alarm time has been reached!'); // 알람 알림 표시
-            alarmTime = null; // 알람 시간 초기화
-            $('#alarm-time').val(''); // 입력 필드 초기화
-            $('.alarm-indicator').hide(); // 알람 인디케이터 숨기기
-            chrome.action.setBadgeText({ text: '' });
-            saveState();
-        }
-    }
-
     // 매 초마다 알람 체크
-    setInterval(checkAlarm, 1000); // 1초마다 checkAlarm 함수 호출
-
-    function saveState() {
-        chrome.storage.local.set({
-            totalSeconds: totalSeconds,
-            isPaused: isPaused,
-            alarmTime: alarmTime ? alarmTime.getTime() : null,
-            startTime: startTime
-        });
-    }
-
-    function loadState() {
-        chrome.storage.local.get(['totalSeconds', 'isPaused', 'alarmTime', 'startTime'], (result) => {
-            totalSeconds = result.totalSeconds || 0;
-            isPaused = result.isPaused || false;
-            alarmTime = result.alarmTime || null;
-            startTime = result.startTime || null;
-
-            // 타이머 설정 돼있을 때
-            if (startTime && !isPaused) {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                totalSeconds = Math.max(0, totalSeconds - elapsed);
-                if (totalSeconds > 0) {
-                    startTimer(); // 상태 로딩 시 타이머 재개
-                } else {
-                    totalSeconds = 0;
-                }
-            }
-            updateDisplay(totalSeconds);
-
-            // 알람 설정 돼있을 때
-            if (alarmTime) {
-                const alarmDate = new Date(alarmTime);
-                const formattedAlarmTime = formatTime(alarmDate);
-                $('#alarm-time').val(formattedAlarmTime);
-                $('.alarm-indicator').show();
-                $('#current-alarm-time').text(`Set Alarm Time: ${formattedAlarmTime}`);
-            } else {
-                $('#current-alarm-time').text('');
-            }
-        });
-    }
+    // setInterval(checkAlarm, 1000);
 
     // 이벤트 리스너들
     $('#start').click(function () {
@@ -225,6 +119,47 @@ function updateDisplay(seconds) {
     );
 }
 
+function saveState() {
+    chrome.storage.local.set({
+        totalSeconds: totalSeconds,
+        isPaused: isPaused,
+        alarmTime: alarmTime,
+        startTime: startTime
+    });
+}
+
+function loadState() {
+    chrome.storage.local.get(['totalSeconds', 'isPaused', 'alarmTime', 'startTime'], (result) => {
+        totalSeconds = result.totalSeconds || 0;
+        isPaused = result.isPaused || false;
+        alarmTime = result.alarmTime || null;
+        startTime = result.startTime || null;
+
+        // 타이머 설정 돼있을 때
+        if (startTime && !isPaused) {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            totalSeconds = Math.max(0, totalSeconds - elapsed);
+            if (totalSeconds > 0) {
+                startTimer(); // 상태 로딩 시 타이머 재개
+            } else {
+                totalSeconds = 0;
+            }
+        }
+        updateDisplay(totalSeconds);
+
+        // 알람 설정 돼있을 때
+        if (alarmTime) {
+            const alarmDate = new Date(alarmTime);
+            const formattedAlarmTime = formatTime(alarmDate);
+            $('#alarm-time').val(formattedAlarmTime);
+            $('.alarm-indicator').show();
+            $('#current-alarm-time').text(`Set Alarm Time: ${formattedAlarmTime}`);
+        } else {
+            $('#current-alarm-time').text('');
+        }
+    });
+}
+
 // 알람 설정
 function setAlarm(time) {
     const [hours, minutes] = time.split(':');
@@ -272,4 +207,68 @@ function cancelAlarm() {
 
     // 상태 저장
     saveState();
+}
+
+// 타이머 시작 함수 수정
+function startTimer() {
+    if (!isPaused && totalSeconds > 0) {
+        // background script에 메시지 전송
+        chrome.runtime.sendMessage({
+            type: 'SET_TIMER',
+            seconds: totalSeconds
+        });
+
+        // 타이머 카운트다운 시작
+        timer = setInterval(function () {
+            if (!isPaused) {
+                if (totalSeconds > 0) {
+                    totalSeconds--;
+                    updateDisplay(totalSeconds);
+                    saveState();
+                } else {
+                    clearInterval(timer);
+                    timer = null;
+                    // 타이머 종료 시 알림 및 상태 초기화
+                    showNotification('Timer', 'The timer has ended!');
+                    chrome.action.setBadgeText({ text: '' });
+                }
+            }
+        }, 1000);
+
+        // 아이콘 배지 텍스트 ON 표시
+        chrome.action.setBadgeText({ text: 'ON' });
+    }
+}
+
+function playAlarmSound() {
+    const audio = new Audio(chrome.runtime.getURL('/assets/sounds/alarm.mp3'));
+    audio.play();
+}
+
+function showNotification(title, message) {
+    chrome.notifications.create({
+        type: 'basic',
+        iconUrl: '/assets/images/icon2.png',
+        title: title,
+        message: message
+    });
+}
+
+function checkAlarm() {
+    if (!alarmTime) return; // 알람 시간이 설정되지 않은 경우 종료
+
+    const now = new Date();
+    const currentTime = formatTime(now); // 현재 시간을 포맷팅
+    const alarmDate = new Date(alarmTime);
+    const formattedAlarmTime = formatTime(alarmDate);
+
+    if (currentTime === formattedAlarmTime) { // 현재 시간이 알람 시간과 일치하는지 확인
+        playAlarmSound(); // 알람 소리 재생
+        showNotification('Alarm', 'Your scheduled alarm time has been reached!'); // 알람 알림 표시
+        alarmTime = null; // 알람 시간 초기화
+        $('#alarm-time').val(''); // 입력 필드 초기화
+        $('.alarm-indicator').hide(); // 알람 인디케이터 숨기기
+        chrome.action.setBadgeText({ text: '' });
+        saveState();
+    }
 }

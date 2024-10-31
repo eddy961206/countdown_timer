@@ -1,9 +1,14 @@
-// 알람 설정 처리
+
+
+// 타이머, 알람 설정 처리
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.type === 'SET_ALARM') {
-        // 알람 설정
-        chrome.alarms.create('alarm', {
-            when: request.alarmTime
+        // 기존 알람이 있으면 취소
+        chrome.alarms.clear('alarm', () => {
+            // 새로운 알람 설정
+            chrome.alarms.create('alarm', {
+                when: request.alarmTime
+            });
         });
     } else if (request.type === 'SET_TIMER') {
         // 타이머 설정
@@ -16,7 +21,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 });
 
-// 알람이 울릴 때 처리
+// 타이머, 알람 울릴 때 처리
 chrome.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === 'timer') {
         // 타이머 종료 시 처리
@@ -26,9 +31,6 @@ chrome.alarms.onAlarm.addListener((alarm) => {
             title: 'Time is up!',
             message: 'Your timer has finished!'
         });
-
-        // 팝업이나 콘텐츠 스크립트에 메시지 전송
-        chrome.runtime.sendMessage({ type: 'PLAY_ALARM_SOUND' });
     } else if (alarm.name === 'alarm') {
         // 알람 종료 시 처리
         chrome.notifications.create({
@@ -37,8 +39,5 @@ chrome.alarms.onAlarm.addListener((alarm) => {
             title: 'Alarm',
             message: 'Your scheduled alarm time has been reached!'
         });
-
-        // 팝업이나 콘텐츠 스크립트에 메시지 전송
-        chrome.runtime.sendMessage({ type: 'PLAY_ALARM_SOUND' });
     }
 });
