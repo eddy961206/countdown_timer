@@ -1,6 +1,6 @@
 body {
     font-family: 'Roboto', sans-serif;
-    width: 320px;
+    width: 340px; /* 약간 더 넓게 조정 */
     margin: 0;
     padding: 15px;
     background-color: #f8f9fa;
@@ -37,18 +37,20 @@ h2 {
 .input-group {
     display: flex;
     justify-content: space-between;
-    gap: 10px;
+    gap: 12px; /* 간격 늘림 */
     margin-bottom: 15px;
+    padding: 0 2px; /* 좌우 패딩 추가 */
 }
 
 .time-input {
     flex: 1;
     text-align: center;
+    min-width: 0; /* flex item 최소 너비 제한 해제 */
 }
 
 .number-input {
-    width: 100%;
-    padding: 8px;
+    width: 90%; /* 너비 조정 */
+    padding: 8px 4px; /* 좌우 패딩 줄임 */
     border: 1px solid #ced4da;
     border-radius: 6px;
     font-size: 16px;
